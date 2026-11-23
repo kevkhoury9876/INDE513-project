@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Plant dashboard</h1>
+<p class="lead">Live view of the Naggiar molding plant, read straight from the SQLite database.</p>
+
+<div class="cards">
+  <div class="card"><span>Machines in service</span><b>{{ stats.in_service }} / {{ stats.machines }}</b></div>
+  <div class="card"><span>Runs in progress</span><b>{{ stats.in_progress }}</b></div>
+  <div class="card"><span>Runs planned</span><b>{{ stats.planned }}</b></div>
+  <div class="card"><span>Reject rate (completed runs)</span><b>{{ stats.reject_rate }} %</b></div>
+</div>
+
+<div class="grid2">
+  <section class="panel">
+    <h2>Production cells</h2>
+    <p class="hint">Business rule: at most 6 machines and 12 operators per cell (enforced by triggers).</p>
+    <table>
+      <tr><th>Cell</th><th>Lead</th><th>Machines</th><th>Operators</th><th>Status</th></tr>
+      {% for c in cells %}
+      <tr>
+        <td><a href="{{ url_for('machines', cell=c.cellId) }}">{{ c.cellName }}</a><br><small>{{ c.location }}</small></td>
+        <td>{{ c.leadName }}</td>
+        <td><div class="bar"><i style="width: {{ (c.machineCount / 6 * 100)|round }}%"></i></div>{{ c.machineCount }} / 6</td>
+        <td><div class="bar"><i style="width: {{ (c.operatorCount / 12 * 100)|round }}%"></i></div>{{ c.operatorCount }} / 12</td>
+        <td><span class="tag {{ c.cellStatus }}">{{ c.cellStatus }}</span></td>
+      </tr>
+      {% endfor %}
+    </table>
+  </section>
+
+  <section class="panel">
+    <h2>Next runs</h2>
+    <p class="hint">Planned and in-progress runs, soonest first. <a href="{{ url_for('run_new') }}">Schedule a run &rarr;</a></p>
+    <table>
+      <tr><th>Start</th><th>Machine</th><th>Product</th></tr>
+      {% for r in upcoming %}
+      <tr>
+        <td>{{ r.plannedStart }}</td>
+        <td><a href="{{ url_for('machine_detail', machine_id=r.machineId) }}">{{ r.machineName }}</a> &middot; run {{ r.runNo }}<br><small>{{ r.cellName }}</small></td>
+        <td>{{ r.productName }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </section>
+</div>
+{% endblock %}
