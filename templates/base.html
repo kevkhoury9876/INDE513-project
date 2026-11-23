@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Naggiar Production Database{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="{{ url_for('index') }}">
+    <span class="logo">N</span>
+    <span><strong>Naggiar Plastics</strong><small>Production database</small></span>
+  </a>
+  <nav>
+    {% set ep = request.endpoint or '' %}
+    <a href="{{ url_for('index') }}" class="{{ 'on' if ep == 'index' }}">Dashboard</a>
+    <a href="{{ url_for('machines') }}" class="{{ 'on' if ep.startswith('machine') }}">Machines</a>
+    <a href="{{ url_for('runs') }}" class="{{ 'on' if ep.startswith('run') }}">Production runs</a>
+    <a href="{{ url_for('lots') }}" class="{{ 'on' if ep.startswith('lot') }}">Material lots</a>
+    <a href="{{ url_for('suppliers') }}" class="{{ 'on' if ep == 'suppliers' }}">Suppliers</a>
+    <a href="{{ url_for('trace') }}" class="{{ 'on' if ep == 'trace' }}">Traceability</a>
+    <a href="{{ url_for('reports') }}" class="{{ 'on' if ep == 'reports' }}">Reports</a>
+  </nav>
+</header>
+
+<main>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+      <div class="flash {{ cat }}">{{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  {% if not_found %}
+    <h1>Page not found</h1>
+    <p><a href="{{ url_for('index') }}">Back to the dashboard</a></p>
+  {% endif %}
+  {% block content %}{% endblock %}
+</main>
+
+<footer>
+  INDE 513 &middot; Naggiar injection and blow molding &middot; Flask + SQLite &middot; {{ today }}
+  <form method="post" action="{{ url_for('reset') }}"
+        onsubmit="return confirm('Reset every table to the Chapter 7 sample data?');">
+    <button class="link">Reset demo data</button>
+  </form>
+</footer>
+</body>
+</html>
