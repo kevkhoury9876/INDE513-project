@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+<p><a href="{{ url_for('runs') }}">&larr; Production runs</a></p>
+<h1>Schedule a production run</h1>
+<p class="lead">The run gets the next run number for its machine and starts as <b>Planned</b>.</p>
+
+<form method="post" class="form">
+  <label>Machine and mold
+    <select name="pair" required>
+      <option value="">Choose a machine and a mold that fits it</option>
+      {% for p in pairs %}
+        {% if loop.first or p.machineId != loop.previtem.machineId %}
+          {% if not loop.first %}</optgroup>{% endif %}
+          <optgroup label="{{ p.assetTag }} · {{ p.machineName }} ({{ p.moldingType }}, {{ p.clampingForceKN|num }} kN)">
+        {% endif %}
+        {% set val = p.machineId ~ '-' ~ p.moldId %}
+        <option value="{{ val }}" {{ 'selected' if form.get('pair') == val }}>{{ p.moldName }} → {{ p.productName }} (needs {{ p.requiredClampingForceKN|num }} kN)</option>
+        {% if loop.last %}</optgroup>{% endif %}
+      {% endfor %}
+    </select>
+    <small>Only pairs from MachineMold, with the machine and mold in service.</small>
+  </label>
+
+  <div class="row">
+    <label>Planned start <input type="datetime-local" name="plannedStart" value="{{ form.get('plannedStart', '') }}" required></label>
+    <label>Planned end <input type="datetime-local" name="plannedEnd" value="{{ form.get('plannedEnd', '') }}" required></label>
+  </div>
+
+  <fieldset>
+    <legend>Operators (WorksOn) &middot; each must be certified for the machine's molding type</legend>
+    <div class="ops">
+    {% for o in operators %}
+      <label class="op"><input type="checkbox" name="operators" value="{{ o.operatorId }}" {{ 'checked' if o.operatorId|string in chosen_ops }}>
+        {{ o.firstName }} {{ o.lastName }} <small>{{ o.cellName }} &middot; {{ o.certs or 'no certification' }}</small></label>
+    {% endfor %}
+    </div>
+  </fieldset>
+
+  <button class="btn">Save run</button>
+</form>
+{% endblock %}
