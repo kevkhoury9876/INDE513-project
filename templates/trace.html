@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Food-contact traceability</h1>
+<p class="lead">Follow a product back to its resin lots, suppliers and compliance documents, or follow a lot forward to every run and product that used it (for a recall).</p>
+
+<div class="grid2">
+  <form class="panel" method="get">
+    <h2>Product &rarr; lots</h2>
+    <select name="product" onchange="this.form.submit()">
+      <option value="">Choose a product</option>
+      {% for p in products %}<option value="{{ p.productId }}" {{ 'selected' if f.product == p.productId|string }}>{{ p.productName }}</option>{% endfor %}
+    </select>
+  </form>
+  <form class="panel" method="get">
+    <h2>Lot &rarr; runs and products</h2>
+    <select name="lot" onchange="this.form.submit()">
+      <option value="">Choose a lot</option>
+      {% for l in lots %}<option {{ 'selected' if f.lot == l.lotNumber }}>{{ l.lotNumber }}</option>{% endfor %}
+    </select>
+  </form>
+</div>
+
+{% if product %}
+<h2>{{ product.productName }} <small>({{ 'food contact' if product.foodContactRequired == 'Yes' else 'not food contact' }})</small></h2>
+{% if preforms %}
+  <p class="flash info">This bottle is blown from a preform, and blow runs use no resin lots.
+  Trace the preform instead:
+  {% for p in preforms %}<a href="{{ url_for('trace', product=p.productId) }}">{{ p.productName }}</a>{% endfor %}</p>
+{% endif %}
+<table>
+  <tr><th>Machine &middot; run</th><th>Run date</th><th>Lot</th><th>Material</th><th>Supplier</th><th>Compliance doc</th><th class="r">Consumed (kg)</th></tr>
+  {% for r in forward %}
+  <tr>
+    <td>{{ r.machineName }} &middot; {{ r.runNo }} <span class="tag {{ r.runStatus }}">{{ r.runStatus }}</span></td>
+    <td>{{ r.runDate }}</td>
+    <td><a href="{{ url_for('trace', lot=r.lotNumber) }}"><code>{{ r.lotNumber }}</code></a></td>
+    <td>{{ r.materialName }}</td>
+    <td>{{ r.supplierName }}</td>
+    <td>{{ r.complianceDocRef or '-' }}</td>
+    <td class="r">{{ r.quantityConsumedKg|num }}</td>
+  </tr>
+  {% else %}
+  <tr><td colspan="7" class="empty">No resin lots are recorded for this product.</td></tr>
+  {% endfor %}
+</table>
+{% endif %}
+
+{% if lot %}
+<h2>Lot <code>{{ lot.lotNumber }}</code> &middot; {{ lot.materialName }} from {{ lot.supplierName }}</h2>
+<p>Received {{ lot.receiptDate }} &middot; {{ lot.receivedQtyKg|num }} kg &middot; {{ lot.remainingKg|num }} kg left &middot; document {{ lot.complianceDocRef or 'none' }}</p>
+<table>
+  <tr><th>Machine &middot; run</th><th>Run date</th><th>Product</th><th>Food contact</th><th class="r">Parts produced</th><th class="r">Lot used (kg)</th></tr>
+  {% for r in backward %}
+  <tr>
+    <td>{{ r.machineName }} &middot; {{ r.runNo }} <span class="tag {{ r.runStatus }}">{{ r.runStatus }}</span></td>
+    <td>{{ r.runDate }}</td>
+    <td>{{ r.productName }}</td>
+    <td>{{ r.foodContactRequired }}</td>
+    <td class="r">{{ r.quantityProduced|num }}</td>
+    <td class="r">{{ r.quantityConsumedKg|num }}</td>
+  </tr>
+  {% else %}
+  <tr><td colspan="6" class="empty">This lot has not been used yet.</td></tr>
+  {% endfor %}
+</table>
+{% endif %}
+{% endblock %}
