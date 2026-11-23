@@ -1,0 +1,122 @@
+NAGGIAR PRODUCTION DATABASE - WEBSITE
+INDE 513 - How to run the website
+=====================================================================
+
+WHAT IS IN THE FOLDER
+---------------------
+  app.py             The website (Python + Flask)
+  database.sql       Our Chapter 7 database (tables, triggers, sample data)
+  templates\         The web pages (HTML)
+  static\style.css   The design
+  requirements.txt   Python packages needed (Flask, gunicorn)
+  render.yaml        Settings for putting the site online with Render
+  run_website.bat    Double-click to start the site on Windows
+  run_website.ps1    Script used by run_website.bat
+
+The database file (naggiar.db) is created automatically the first
+time the website starts.
+
+
+=====================================================================
+PART 1 - RUN IT ON YOUR LAPTOP (WINDOWS)
+=====================================================================
+
+Step 1 - Install Python (only once)
+  - Go to https://www.python.org/downloads/ and download Python.
+  - On the FIRST setup screen, tick "Add python.exe to PATH".
+  - Click "Install Now".
+
+Step 2 - Unzip the project
+  - Right-click naggiar-website.zip > Extract All.
+  - Open the extracted "naggiar-website" folder.
+
+Step 3 - Start the website
+  - Double-click run_website.bat.
+  - The first time, it installs Flask (needs internet, about 1 minute).
+  - Your browser opens at:  http://127.0.0.1:5000
+
+Step 4 - Stop the website
+  - Close the black window.
+
+IF THE .BAT FILE DOES NOT WORK
+  1. Open the naggiar-website folder.
+  2. Click the address bar at the top, type  cmd  and press Enter.
+  3. Type these two commands (press Enter after each):
+        pip install flask
+        python app.py
+  4. Open http://127.0.0.1:5000 in your browser.
+  5. To stop: press Ctrl + C in the black window.
+
+COMMON PROBLEMS
+  - "python is not recognized" or "pip is not recognized"
+      Python was installed without "Add to PATH". Reinstall Python and
+      tick that box, or use  py -m pip install flask  then  py app.py
+  - "Address already in use"
+      The website is already running in another window. Close it first.
+  - The page does not open
+      Keep the black window open: the site only works while it runs.
+
+NOTE: http://127.0.0.1:5000 works only on your own computer.
+To share a link with the group or the instructor, use Part 2.
+
+
+=====================================================================
+PART 2 - PUT IT ONLINE WITH RENDER (FREE)
+=====================================================================
+
+Step 1 - Upload the code to GitHub
+  - Make a free account at https://github.com
+  - Click "New repository", give it a name (e.g. naggiar-website),
+    and click "Create repository".
+  - Click "uploading an existing file" and drag in EVERYTHING inside
+    the naggiar-website folder (the files and the templates and
+    static folders), not the zip itself.
+  - Click "Commit changes".
+
+Step 2 - Create the website on Render
+  - Go to https://render.com and sign in with GitHub.
+  - Click New > Web Service and choose your repository.
+  - Check these settings:
+        Runtime:         Python
+        Build Command:   pip install -r requirements.txt
+        Start Command:   gunicorn app:app
+        Instance Type:   Free
+  - Click "Create Web Service" and wait a few minutes.
+  - Render gives you a link ending in .onrender.com.
+    Put this link in the report.
+
+IMPORTANT ABOUT THE FREE PLAN
+  - Records you add are deleted whenever the site restarts; it goes
+    back to the Chapter 7 sample data. This is fine for the demo.
+  - The site sleeps after 15 minutes with no visitors. Open the link
+    about 1 minute before presenting so it has time to wake up.
+  - To change the site later, upload the changed files to GitHub;
+    Render updates the site on its own.
+
+
+=====================================================================
+PART 3 - USING THE WEBSITE
+=====================================================================
+
+  Dashboard        Main numbers, the production cells, the next runs
+  Machines         Search machines; click an asset tag for details
+  Production runs  Search runs; "+ Schedule a run" adds a new run
+  Material lots    Stock left in each lot; "+ Receive a lot" adds one
+  Suppliers        Search by name, email, address or material
+  Traceability     Product -> resin lots and documents, or
+                   lot -> every product that used it
+  Reports          The 12 Chapter 7 queries, run live ("Show SQL")
+
+  "Reset demo data" (bottom of every page) puts back the original
+  sample data. Use it after testing or before the demo.
+
+DEMO IDEAS (to show the database rules working)
+  1. Schedule a run on Stretch Blow 1 with Karim Haddad
+       -> refused: he is not certified for Blow molding.
+  2. Schedule a run on a machine at a time it is already busy
+       -> refused: the machine already has a run then.
+  3. Receive a lot with the number HDB-26
+       -> refused by the database: letters and digits only.
+  4. Receive a PET lot with no compliance document
+       -> refused: food-contact material needs a document.
+  5. Schedule a correct run, then open Reports: the answers change.
