@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Suppliers</h1>
+<form class="filters" method="get">
+  <input name="q" value="{{ q }}" placeholder="Search name, email, address or material">
+  <button>Search</button>
+  <a href="{{ url_for('suppliers') }}">Clear</a>
+</form>
+<p class="count">{{ suppliers|length }} supplier(s). Phones and addresses are multivalued attributes (SupplierPhone, SupplierAddress).</p>
+<table>
+  <tr><th>Supplier</th><th>Email</th><th>Phones</th><th>Addresses</th><th>Materials supplied</th><th class="r">Lots</th><th>Status</th></tr>
+  {% for s in suppliers %}
+  <tr>
+    <td><b>{{ s.supplierName }}</b></td>
+    <td>{{ s.email }}</td>
+    <td>{% for p in (s.phones or '').split(' | ') %}{{ p }}<br>{% endfor %}</td>
+    <td><small>{% for a in (s.addresses or '').split(' | ') %}{{ a }}<br>{% endfor %}</small></td>
+    <td>{{ s.materials or '-' }}</td>
+    <td class="r"><a href="{{ url_for('lots', q=s.supplierName) }}">{{ s.lotCount }}</a></td>
+    <td><span class="tag {{ s.supplierStatus }}">{{ s.supplierStatus }}</span></td>
+  </tr>
+  {% else %}
+  <tr><td colspan="7" class="empty">No supplier matches this search.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}
