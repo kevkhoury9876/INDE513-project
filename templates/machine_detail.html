@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<p><a href="{{ url_for('machines') }}">&larr; All machines</a></p>
+<h1>{{ m.machineName }} <code>{{ m.assetTag }}</code> <span class="tag {{ m.machineStatus }}">{{ m.machineStatus }}</span></h1>
+<div class="cards">
+  <div class="card"><span>Type</span><b>{{ m.moldingType }}</b></div>
+  <div class="card"><span>Clamping force</span><b>{{ m.clampingForceKN|num }} kN</b></div>
+  <div class="card"><span>Maker / model</span><b>{{ m.manufacturer or '-' }} {{ m.model or '' }}</b></div>
+  <div class="card"><span>Cell</span><b>{{ m.cellName }}</b></div>
+</div>
+
+<h2>Molds that fit this machine (MachineMold)</h2>
+<table>
+  <tr><th>Mold</th><th>Makes</th><th class="r">Cavities</th><th class="r">Needs (kN)</th><th>Status</th></tr>
+  {% for mo in molds %}
+  <tr><td>{{ mo.moldName }}</td><td>{{ mo.productName }}</td><td class="r">{{ mo.cavityCount }}</td>
+      <td class="r">{{ mo.requiredClampingForceKN|num }}</td><td><span class="tag {{ mo.moldStatus }}">{{ mo.moldStatus }}</span></td></tr>
+  {% else %}<tr><td colspan="5" class="empty">No molds listed.</td></tr>{% endfor %}
+</table>
+
+<h2>Run history (weak entity: runNo restarts at 1 on every machine)</h2>
+<table>
+  <tr><th>Run</th><th>Product</th><th>Planned start</th><th>Status</th><th class="r">Produced</th><th class="r">Rejected</th></tr>
+  {% for r in runs %}
+  <tr><td>{{ r.runNo }}</td><td>{{ r.productName }}</td><td>{{ r.plannedStart }}</td>
+      <td><span class="tag {{ r.runStatus }}">{{ r.runStatus }}</span></td>
+      <td class="r">{{ r.quantityProduced|num }}</td><td class="r">{{ r.quantityRejected|num }}</td></tr>
+  {% else %}<tr><td colspan="6" class="empty">No runs yet.</td></tr>{% endfor %}
+</table>
+{% endblock %}
