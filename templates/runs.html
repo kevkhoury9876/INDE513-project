@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="head">
+  <h1>Production runs</h1>
+  <a class="btn" href="{{ url_for('run_new') }}">+ Schedule a run</a>
+</div>
+<form class="filters" method="get">
+  <input name="q" value="{{ f.q }}" placeholder="Search product or mold">
+  <select name="status"><option value="">Any status</option>
+    {% for s in statuses %}<option {{ 'selected' if f.status == s }}>{{ s }}</option>{% endfor %}</select>
+  <select name="machine"><option value="">Any machine</option>
+    {% for m in machines %}<option value="{{ m.machineId }}" {{ 'selected' if f.machine == m.machineId|string }}>{{ m.assetTag }} &middot; {{ m.machineName }}</option>{% endfor %}</select>
+  <label>From <input type="date" name="from" value="{{ f.from }}"></label>
+  <label>To <input type="date" name="to" value="{{ f.to }}"></label>
+  <button>Search</button>
+  <a href="{{ url_for('runs') }}">Clear</a>
+</form>
+
+<p class="count">{{ runs|length }} run(s)</p>
+<table>
+  <tr><th>Machine &middot; run</th><th>Product (mold)</th><th>Planned</th><th>Status</th><th class="r">Produced</th><th class="r">Rejected</th><th class="r">Reject %</th><th>Operators</th></tr>
+  {% for r in runs %}
+  <tr>
+    <td><a href="{{ url_for('machine_detail', machine_id=r.machineId) }}">{{ r.machineName }}</a> &middot; {{ r.runNo }}</td>
+    <td>{{ r.productName }}<br><small>{{ r.moldName }}</small></td>
+    <td>{{ r.plannedStart }}<br><small>to {{ r.plannedEnd }}</small></td>
+    <td><span class="tag {{ r.runStatus }}">{{ r.runStatus }}</span></td>
+    <td class="r">{{ r.quantityProduced|num }}</td>
+    <td class="r">{{ r.quantityRejected|num }}</td>
+    <td class="r {{ 'warn' if r.rejectRate and r.rejectRate > 2 }}">{{ r.rejectRate if r.rejectRate is not none else '-' }}</td>
+    <td><small>{{ r.operators or '-' }}</small></td>
+  </tr>
+  {% else %}
+  <tr><td colspan="8" class="empty">No run matches this search.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}
