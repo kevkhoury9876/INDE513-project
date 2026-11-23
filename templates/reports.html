@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Reports: the 12 queries</h1>
+<p class="lead">Each query runs live on the database, so the answers change when you add runs or lots.</p>
+
+<nav class="jump">{% for r in results %}<a href="#{{ r.code }}">{{ r.code }}</a>{% endfor %}</nav>
+
+{% for r in results %}
+<section class="panel report" id="{{ r.code }}">
+  <h2>{{ r.code }} &middot; {{ r.question }}</h2>
+  <p class="hint">{{ r.kind }} &middot; {{ r.rows|length }} row(s)</p>
+  <table>
+    <tr>{% for c in r.columns %}<th>{{ c }}</th>{% endfor %}</tr>
+    {% for row in r.rows %}
+    <tr>{% for v in row %}<td>{{ v if v is not none else '-' }}</td>{% endfor %}</tr>
+    {% else %}
+    <tr><td colspan="{{ r.columns|length }}" class="empty">No rows (for Q12 this is the good answer: nobody worked without certification).</td></tr>
+    {% endfor %}
+  </table>
+  <details><summary>Show SQL</summary><pre>{{ r.sql }}</pre></details>
+</section>
+{% endfor %}
+{% endblock %}
