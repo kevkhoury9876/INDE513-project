@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block content %}
+<p><a href="{{ url_for('lots') }}">&larr; Material lots</a></p>
+<h1>Receive a material lot</h1>
+<p class="lead">The database checks the lot number (letters and digits only), the date format and that amounts are positive.</p>
+
+<form method="post" class="form">
+  <div class="row">
+    <label>Lot number <input name="lotNumber" maxlength="30" value="{{ form.get('lotNumber', '') }}" placeholder="PET2612001" required></label>
+    <label>Receipt date <input type="date" name="receiptDate" value="{{ form.get('receiptDate', '') }}" required></label>
+  </div>
+  <div class="row">
+    <label>Material
+      <select name="materialId" id="material" required>
+        <option value="">Choose</option>
+        {% for m in materials %}<option value="{{ m.materialId }}" {{ 'selected' if form.get('materialId') == m.materialId|string }}>{{ m.materialName }} ({{ m.resinType }})</option>{% endfor %}
+      </select>
+    </label>
+    <label>Supplier
+      <select name="supplierId" id="supplier" required>
+        <option value="">Choose</option>
+        {% for s in suppliers %}<option value="{{ s.supplierId }}" {{ 'selected' if form.get('supplierId') == s.supplierId|string }}>{{ s.supplierName }}</option>{% endfor %}
+      </select>
+      <small id="supplierHint">Approved suppliers only.</small>
+    </label>
+  </div>
+  <div class="row">
+    <label>Received quantity (kg) <input type="number" step="0.01" name="receivedQtyKg" value="{{ form.get('receivedQtyKg', '') }}" required></label>
+    <label>Unit cost per kg <input type="number" step="0.01" name="unitCostPerKg" value="{{ form.get('unitCostPerKg', '') }}" required></label>
+  </div>
+  <label>Compliance document reference
+    <input name="complianceDocRef" maxlength="100" value="{{ form.get('complianceDocRef', '') }}" placeholder="DOC-FC-2026-130">
+    <small>Required when the material goes into a food-contact product.</small>
+  </label>
+  <button class="btn">Save lot</button>
+</form>
+
+<script>
+// Show which approved suppliers sell the chosen material (MaterialSupplier).
+const pairs = {{ pairs|map('list')|list|tojson }};
+const material = document.getElementById('material');
+const supplier = document.getElementById('supplier');
+function filterSuppliers() {
+  const allowed = pairs.filter(p => String(p[0]) === material.value).map(p => String(p[1]));
+  for (const opt of supplier.options) {
+    if (!opt.value) continue;
+    opt.hidden = material.value !== '' && !allowed.includes(opt.value);
+  }
+  if (supplier.selectedOptions[0] && supplier.selectedOptions[0].hidden) supplier.value = '';
+  document.getElementById('supplierHint').textContent = material.value
+    ? allowed.length + ' approved supplier(s) sell this material.' : 'Approved suppliers only.';
+}
+material.addEventListener('change', filterSuppliers);
+filterSuppliers();
+</script>
+{% endblock %}
